@@ -21,6 +21,7 @@ const handleFileChange = async (e: Event) => {
 <template>
 	<div>
 		<input ref="fileInput" type="file" accept="image/*" @change="handleFileChange" />
-		HELLO
 	</div>
 </template>
+
+<style lang="scss" scoped></style>
