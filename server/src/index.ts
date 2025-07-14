@@ -1,14 +1,17 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-const msgpack: any = require('msgpack-lite');
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import { requestSchema } from './schema';
+import fromZodSchema from 'zod-to-json-schema';
+const msgpack = require('msgpack-lite');
 
 const app = express();
 const PORT = 3000;
 
 
 app.use(cors());
+
 
 app.use((req, res, next) => {
   const contentType = req.headers['content-type'];
@@ -29,8 +32,21 @@ app.use((req, res, next) => {
   }
 });
 
+
+app.get('/schema', (_req, res) => {
+  const schema = fromZodSchema(requestSchema);
+  res.setHeader('Content-Type', 'application/json');
+  res.send(schema);
+});
+
 app.post('/predict', (req, res) => {
-  const { requestId } = req.body;
+  const parseResult = requestSchema.safeParse(req.body);
+
+  if (!parseResult.success) {
+    return res.status(400).send('Invalid request body');
+  }
+
+  const { requestId } = parseResult.data;
 
   const response = {
     requestId: requestId || uuidv4(),
